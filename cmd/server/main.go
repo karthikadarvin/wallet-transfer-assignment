@@ -37,8 +37,11 @@ func main() {
 	transferService := service.NewTransferService(conn, walletRepo, transferRepo, ledgerRepo, idempotencyRepo)
 	transferHandler := handler.NewTransferHandler(transferService)
 
+	walletQueryService := service.NewWalletQueryService(conn, walletRepo, transferRepo)
+	walletHandler := handler.NewWalletHandler(walletQueryService)
+
 	e := echo.New()
-	router.Register(e, transferHandler)
+	router.Register(e, transferHandler, walletHandler)
 
 	log.Printf("starting server on port %s", cfg.Port)
 	if err := e.Start(":" + cfg.Port); err != nil {

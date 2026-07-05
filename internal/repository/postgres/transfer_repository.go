@@ -75,3 +75,35 @@ func (r *TransferRepository) GetByID(ctx context.Context, q repository.Querier, 
 
 	return &t, nil
 }
+
+// ListByWallet returns transfers where the wallet is either the source or
+// destination, most recent first, paginated.
+func (r *TransferRepository) ListByWallet(ctx context.Context, q repository.Querier, walletID string, limit, offset int) ([]*domain.Transfer, error) {
+	rows, err := q.QueryContext(ctx, `
+		SELECT id, from_wallet_id, to_wallet_id, amount, status,
+		       COALESCE(failure_reason, ''), created_at, updated_at
+		FROM transfers
+		WHERE from_wallet_id = $1 OR to_wallet_id = $1
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3
+	`, walletID, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("query transfers by wallet: %w", err)
+	}
+	defer rows.Close()
+
+	var transfers []*domain.Transfer
+	for rows.Next() {
+		var t domain.Transfer
+		if err := rows.Scan(&t.ID, &t.FromWalletID, &t.ToWalletID, &t.Amount, &t.Status,
+			&t.FailureReason, &t.CreatedAt, &t.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("scan transfer: %w", err)
+		}
+		transfers = append(transfers, &t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate transfers: %w", err)
+	}
+
+	return transfers, nil
+}

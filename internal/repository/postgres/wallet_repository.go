@@ -57,3 +57,22 @@ func (r *WalletRepository) UpdateBalance(ctx context.Context, q repository.Queri
 
 	return nil
 }
+
+// Get reads the wallet balance without locking — used for read-only balance queries.
+func (r *WalletRepository) Get(ctx context.Context, q repository.Querier, id string) (*domain.Wallet, error) {
+	row := q.QueryRowContext(ctx, `
+		SELECT id, balance, created_at, updated_at
+		FROM wallets
+		WHERE id = $1
+	`, id)
+
+	var w domain.Wallet
+	if err := row.Scan(&w.ID, &w.Balance, &w.CreatedAt, &w.UpdatedAt); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrWalletNotFound
+		}
+		return nil, fmt.Errorf("scan wallet: %w", err)
+	}
+
+	return &w, nil
+}

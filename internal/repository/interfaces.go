@@ -19,12 +19,14 @@ type Querier interface {
 type WalletRepository interface {
 	GetForUpdate(ctx context.Context, q Querier, id string) (*domain.Wallet, error)
 	UpdateBalance(ctx context.Context, q Querier, id string, newBalance int64) error
+	Get(ctx context.Context, q Querier, id string) (*domain.Wallet, error)
 }
 
 type TransferRepository interface {
 	Create(ctx context.Context, q Querier, t *domain.Transfer) error
 	UpdateStatus(ctx context.Context, q Querier, id string, status domain.TransferStatus, failureReason string) error
 	GetByID(ctx context.Context, q Querier, id string) (*domain.Transfer, error)
+	ListByWallet(ctx context.Context, q Querier, walletID string, limit, offset int) ([]*domain.Transfer, error)
 }
 
 type LedgerRepository interface {
