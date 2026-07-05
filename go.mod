@@ -3,6 +3,7 @@ module github.com/karthikadarvin/wallet-transfer-assignment
 go 1.26.4
 
 require (
+	github.com/golang-migrate/migrate/v4 v4.19.1 // indirect
 	github.com/labstack/echo/v4 v4.15.4 // indirect
 	github.com/labstack/gommon v0.5.0 // indirect
 	github.com/lib/pq v1.12.3 // indirect
