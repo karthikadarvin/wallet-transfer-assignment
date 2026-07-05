@@ -13,3 +13,5 @@ var (
 )
 
 var ErrInvalidTransferTransition = errors.New("invalid transfer state transition")
+
+var ErrIdempotencyInProgress = errors.New("a request with this idempotency key is already being processed")
